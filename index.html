@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Traffic Sign Chatbot</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; }
+    .container { padding: 20px; text-align: center; }
+
+    .upload-box { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: inline-block; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; background: #007bff; color: white; cursor: pointer; }
+    .btn:hover { background: #0056b3; }
+
+    .chatbot-icon { position: fixed; bottom: 20px; right: 20px; background: #007bff; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    .chatbot-icon img { width: 30px; height: 30px; }
+
+    .chatbot-box { position: fixed; bottom: 90px; right: 20px; width: 300px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: none; flex-direction: column; overflow: hidden; }
+    .chat-header { background: #007bff; color: white; padding: 10px; text-align: center; }
+    .chat-messages { flex: 1; padding: 10px; overflow-y: auto; font-size: 14px; }
+    .chat-input { display: flex; border-top: 1px solid #ccc; }
+    .chat-input input { flex: 1; padding: 10px; border: none; outline: none; }
+    .chat-input button { padding: 10px; border: none; background: #007bff; color: white; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚦 Traffic Sign Recognition</h1>
+    <div class="upload-box">
+      <form method="POST" enctype="multipart/form-data">
+        <p><input type="file" name="file"></p>
+        <button class="btn" type="submit">Predict Sign</button>
+      </form>
+      {% if file_path %}
+        <h3>Uploaded Image:</h3>
+        <img src="{{ file_path }}" width="150"><br>
+      {% endif %}
+      {% if prediction %}
+        <h3>Predicted Sign: {{ prediction }}</h3>
+        <p>Confidence: {{ confidence }}%</p>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- Chatbot -->
+  <div class="chatbot-icon" onclick="toggleChat()">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="Chat">
+  </div>
+
+  <div class="chatbot-box" id="chatbot-box">
+    <div class="chat-header">💬 Traffic Sign Chatbot</div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input">
+      <input type="text" id="user-message" placeholder="Ask about a sign...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleChat() {
+      const box = document.getElementById("chatbot-box");
+      box.style.display = box.style.display === "flex" ? "none" : "flex";
+    }
+
+    function appendMessage(sender, message) {
+      const messages = document.getElementById("chat-messages");
+      const div = document.createElement("div");
+      div.innerHTML = `<b>${sender}:</b> ${message}`;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("user-message");
+      const message = input.value.trim();
+      if (!message) return;
+
+      appendMessage("You", message);
+      input.value = "";
+
+      fetch("/chatbot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message })
+      })
+      .then(res => res.json())
+      .then(data => {
+        appendMessage("Chatbot", data.response);
+      })
+      .catch(err => console.error("Error:", err));
+    }
+  </script>
+</body>
+</html>
