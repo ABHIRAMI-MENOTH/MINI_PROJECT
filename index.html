@@ -2,25 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+
   <title>Traffic Sign Chatbot</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; }
-    .container { padding: 20px; text-align: center; }
-
-    .upload-box { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: inline-block; }
-    .btn { padding: 10px 20px; border: none; border-radius: 8px; background: #007bff; color: white; cursor: pointer; }
-    .btn:hover { background: #0056b3; }
-
-    .chatbot-icon { position: fixed; bottom: 20px; right: 20px; background: #007bff; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-    .chatbot-icon img { width: 30px; height: 30px; }
-
-    .chatbot-box { position: fixed; bottom: 90px; right: 20px; width: 300px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: none; flex-direction: column; overflow: hidden; }
-    .chat-header { background: #007bff; color: white; padding: 10px; text-align: center; }
-    .chat-messages { flex: 1; padding: 10px; overflow-y: auto; font-size: 14px; }
-    .chat-input { display: flex; border-top: 1px solid #ccc; }
-    .chat-input input { flex: 1; padding: 10px; border: none; outline: none; }
-    .chat-input button { padding: 10px; border: none; background: #007bff; color: white; cursor: pointer; }
-  </style>
+  
 </head>
 <body>
   <div class="container">
@@ -39,6 +24,9 @@
         <p>Confidence: {{ confidence }}%</p>
       {% endif %}
 
+      <!--  New Camera Button -->
+      <p>Or try live camera capture:</p>
+      <a href="/camera" class="btn">Use Camera</a>
     </div>
   </div>
 
