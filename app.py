@@ -3,6 +3,7 @@ import os
 import cv2
 import numpy as np
 from tensorflow.keras.models import load_model
+from PIL import Image  # added for handling webcam image blobs
 
 # Import chatbot function
 from chatbot import get_chatbot_response
@@ -59,17 +60,18 @@ classes_names = {
     42: 'End no passing vehicles > 3.5 tons'
 }
 
-# Prediction function
+# Prediction function (for file upload)
 def predict_sign(img_path):
     img = cv2.imread(img_path)
     img = cv2.resize(img, (32, 32))
     img = np.expand_dims(img, axis=0) / 255.0
-    pred = model.predict(img)[0]   # prediction probabilities for all 43 classes
+    pred = model.predict(img)[0]
     class_index = np.argmax(pred)
-    confidence = pred[class_index] * 100  # convert to percentage
+    confidence = pred[class_index] * 100
     return classes_names[class_index], round(confidence, 2)
 
 
+# Homepage (Upload + Chatbot)
 @app.route("/", methods=["GET", "POST"])
 def index():
     prediction = None
@@ -82,7 +84,6 @@ def index():
         if "file" in request.files and request.files["file"].filename != "":
             file = request.files["file"]
 
-            # Ensure "static/uploads" folder exists
             upload_folder = os.path.join("static", "uploads")
             os.makedirs(upload_folder, exist_ok=True)
 
@@ -105,17 +106,43 @@ def index():
     )
 
 
-
-
-# ✅ Chatbot API route
+# Chatbot API route
 @app.route("/chatbot", methods=["POST"])
 def chatbot_api():
-    user_message = request.json.get("message")  # frontend sends JSON
+    user_message = request.json.get("message")
     if not user_message:
         return jsonify({"response": "Please enter a message."})
 
     response = get_chatbot_response(user_message)
     return jsonify({"response": response})
+
+
+# Camera page
+@app.route("/camera")
+def camera():
+    return render_template("camera.html")
+
+
+# Prediction route for camera capture
+@app.route("/predict_camera", methods=["POST"])
+def predict_camera():
+    if "file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files["file"]
+    file_path = os.path.join("static/uploads", file.filename)
+    os.makedirs("static/uploads", exist_ok=True)
+    file.save(file_path)
+
+    result, confidence = predict_sign(file_path)
+
+    # Cast confidence to float to fix JSON serialization error
+    return jsonify({
+        "result": result,
+        "confidence": float(confidence)
+    })
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
